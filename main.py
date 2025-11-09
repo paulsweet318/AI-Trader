@@ -26,6 +26,10 @@ AGENT_REGISTRY = {
         "module": "agent.base_agent_astock.base_agent_astock",
         "class": "BaseAgentAStock"
     },
+    "BaseAgentCrypto": {
+        "module": "agent.base_agent_crypto.base_agent_crypto",
+        "class": "BaseAgentCrypto"
+    },
 }
 
 
@@ -120,7 +124,13 @@ async def main(config_path=None):
     # Auto-detect market from agent_type (BaseAgentAStock always uses CN market)
     if agent_type == "BaseAgentAStock":
         market = "cn"
-    print(f"🌍 Market type: {'A-shares (China)' if market == 'cn' else 'US stocks'}")
+    # Display market type including crypto
+    if market == "cn":
+        print("🌍 Market type: A-shares (China)")
+    elif market == "crypto":
+        print("🌍 Market type: Cryptocurrency (Binance)")
+    else:
+        print("🌍 Market type: US stocks")
 
     # Get date range from configuration file
     INIT_DATE = config["date_range"]["init_date"]

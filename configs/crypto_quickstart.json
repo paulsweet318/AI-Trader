@@ -1,0 +1,28 @@
+{
+  "agent_type": "BaseAgentCrypto",
+  "market": "crypto",
+  "exchange": "binance",
+  "date_range": {
+    "init_date": "2025-10-01",
+    "end_date": "2025-10-21"
+  },
+  "models": [
+    {
+      "name": "claude-3.7-sonnet",
+      "basemodel": "anthropic/claude-3.7-sonnet",
+      "signature": "claude-3.7-sonnet",
+      "enabled": true,
+      "openai_base_url": "Optional: YOUR_OPENAI_BASE_URL",
+      "openai_api_key": "Optional: YOUR_OPENAI_API_KEY"
+    }
+  ],
+  "agent_config": {
+    "max_steps": 10,
+    "max_retries": 3,
+    "base_delay": 1.0,
+    "initial_cash": 10000.0
+  },
+  "log_config": {
+    "log_path": "./data/agent_data_crypto"
+  }
+}
