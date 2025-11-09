@@ -28,6 +28,7 @@ class MCPServiceManager:
             "search": int(os.getenv("SEARCH_HTTP_PORT", "8001")),
             "trade": int(os.getenv("TRADE_HTTP_PORT", "8002")),
             "price": int(os.getenv("GETPRICE_HTTP_PORT", "8003")),
+            "binance": int(os.getenv("BINANCE_HTTP_PORT", "8005")),
         }
 
         # Service configurations
@@ -37,6 +38,7 @@ class MCPServiceManager:
             "search": {"script": "tool_alphavantage_news.py", "name": "Search", "port": self.ports["search"]},
             "trade": {"script": "tool_trade.py", "name": "TradeTools", "port": self.ports["trade"]},
             "price": {"script": "tool_get_price_local.py", "name": "LocalPrices", "port": self.ports["price"]},
+            "binance": {"script": "tool_binance.py", "name": "Binance", "port": self.ports["binance"]},
         }
 
         # Create logs directory

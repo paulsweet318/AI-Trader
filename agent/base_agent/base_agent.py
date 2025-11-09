@@ -303,11 +303,15 @@ class BaseAgent:
             },
             "search": {
                 "transport": "streamable_http",
-                "url": f"http://localhost:{os.getenv('SEARCH_HTTP_PORT', '8004')}/mcp",
+                "url": f"http://localhost:{os.getenv('SEARCH_HTTP_PORT', '8001')}/mcp",
             },
             "trade": {
                 "transport": "streamable_http",
                 "url": f"http://localhost:{os.getenv('TRADE_HTTP_PORT', '8002')}/mcp",
+            },
+            "binance": {
+                "transport": "streamable_http",
+                "url": f"http://localhost:{os.getenv('BINANCE_HTTP_PORT', '8005')}/mcp",
             },
         }
 

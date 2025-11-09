@@ -14,6 +14,8 @@ from datetime import datetime
 from typing import Dict, List, Optional, Union
 from decimal import Decimal
 
+from dotenv import load_dotenv
+from fastmcp import FastMCP
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceOrderException
 from binance.enums import *
@@ -21,6 +23,8 @@ from binance.enums import *
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 # 从环境变量获取API密钥
 BINANCE_API_KEY = os.getenv('BINANCE_API_KEY', '')
@@ -43,6 +47,10 @@ else:
         testnet=False
     )
 
+# 初始化 MCP 服务
+mcp = FastMCP("Binance")
+
+@mcp.tool()
 def get_binance_price(symbol: str) -> Dict[str, Union[str, float]]:
     """
     获取指定交易对的当前价格
@@ -70,6 +78,7 @@ def get_binance_price(symbol: str) -> Dict[str, Union[str, float]]:
             "status": "error"
         }
 
+@mcp.tool()
 def get_binance_orderbook(symbol: str, limit: int = 100) -> Dict[str, any]:
     """
     获取订单簿数据
@@ -99,6 +108,7 @@ def get_binance_orderbook(symbol: str, limit: int = 100) -> Dict[str, any]:
             "status": "error"
         }
 
+@mcp.tool()
 def get_binance_klines(symbol: str, interval: str = "1h", limit: int = 24) -> List[Dict[str, any]]:
     """
     获取K线数据
@@ -138,6 +148,7 @@ def get_binance_klines(symbol: str, interval: str = "1h", limit: int = 24) -> Li
             "status": "error"
         }]
 
+@mcp.tool()
 def get_binance_24hr_ticker(symbol: str) -> Dict[str, any]:
     """
     获取24小时价格统计信息
@@ -180,6 +191,7 @@ def get_binance_24hr_ticker(symbol: str) -> Dict[str, any]:
             "status": "error"
         }
 
+@mcp.tool()
 def get_binance_account_info() -> Dict[str, any]:
     """
     获取账户信息
@@ -220,6 +232,7 @@ def get_binance_account_info() -> Dict[str, any]:
             "status": "error"
         }
 
+@mcp.tool()
 def place_binance_order(
     symbol: str,
     side: str,
@@ -293,6 +306,7 @@ def place_binance_order(
             "status": "error"
         }
 
+@mcp.tool()
 def get_binance_open_orders(symbol: Optional[str] = None) -> List[Dict[str, any]]:
     """
     获取当前挂单
@@ -335,6 +349,7 @@ def get_binance_open_orders(symbol: Optional[str] = None) -> List[Dict[str, any]
             "status": "error"
         }]
 
+@mcp.tool()
 def cancel_binance_order(symbol: str, order_id: int) -> Dict[str, any]:
     """
     取消订单
@@ -366,6 +381,7 @@ def cancel_binance_order(symbol: str, order_id: int) -> Dict[str, any]:
             "status": "error"
         }
 
+@mcp.tool()
 def get_top_cryptocurrencies(limit: int = 10) -> List[Dict[str, any]]:
     """
     获取热门加密货币列表
@@ -405,181 +421,8 @@ def get_top_cryptocurrencies(limit: int = 10) -> List[Dict[str, any]]:
             "status": "error"
         }]
 
-# MCP工具注册函数
-def register_binance_tools():
-    """
-    注册币安MCP工具
-    Register Binance MCP tools
-    """
-    tools = [
-        {
-            "name": "get_binance_price",
-            "description": "获取币安指定交易对的当前价格",
-            "function": get_binance_price,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对，如 'BTCUSDT', 'ETHUSDT'",
-                    "required": True
-                }
-            }
-        },
-        {
-            "name": "get_binance_orderbook",
-            "description": "获取币安订单簿数据",
-            "function": get_binance_orderbook,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对",
-                    "required": True
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "深度限制，默认100",
-                    "required": False,
-                    "default": 100
-                }
-            }
-        },
-        {
-            "name": "get_binance_klines",
-            "description": "获取币安K线数据",
-            "function": get_binance_klines,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对",
-                    "required": True
-                },
-                "interval": {
-                    "type": "string",
-                    "description": "时间间隔，如 '1m', '5m', '1h', '1d'",
-                    "required": False,
-                    "default": "1h"
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "数据条数限制，默认24",
-                    "required": False,
-                    "default": 24
-                }
-            }
-        },
-        {
-            "name": "get_binance_24hr_ticker",
-            "description": "获取币安24小时价格统计信息",
-            "function": get_binance_24hr_ticker,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对",
-                    "required": True
-                }
-            }
-        },
-        {
-            "name": "get_binance_account_info",
-            "description": "获取币安账户信息和余额",
-            "function": get_binance_account_info,
-            "parameters": {}
-        },
-        {
-            "name": "place_binance_order",
-            "description": "在币安下单交易",
-            "function": place_binance_order,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对",
-                    "required": True
-                },
-                "side": {
-                    "type": "string",
-                    "description": "交易方向，'BUY' 或 'SELL'",
-                    "required": True
-                },
-                "type_": {
-                    "type": "string",
-                    "description": "订单类型，'MARKET', 'LIMIT'",
-                    "required": True
-                },
-                "quantity": {
-                    "type": "number",
-                    "description": "数量",
-                    "required": True
-                },
-                "price": {
-                    "type": "number",
-                    "description": "价格（限价单需要）",
-                    "required": False
-                },
-                "time_in_force": {
-                    "type": "string",
-                    "description": "有效时间，默认GTC",
-                    "required": False,
-                    "default": "GTC"
-                }
-            }
-        },
-        {
-            "name": "get_binance_open_orders",
-            "description": "获取币安当前挂单",
-            "function": get_binance_open_orders,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对，可选，不传则返回所有挂单",
-                    "required": False
-                }
-            }
-        },
-        {
-            "name": "cancel_binance_order",
-            "description": "取消币安订单",
-            "function": cancel_binance_order,
-            "parameters": {
-                "symbol": {
-                    "type": "string",
-                    "description": "交易对",
-                    "required": True
-                },
-                "order_id": {
-                    "type": "integer",
-                    "description": "订单ID",
-                    "required": True
-                }
-            }
-        },
-        {
-            "name": "get_top_cryptocurrencies",
-            "description": "获取热门加密货币列表",
-            "function": get_top_cryptocurrencies,
-            "parameters": {
-                "limit": {
-                    "type": "integer",
-                    "description": "返回数量限制，默认10",
-                    "required": False,
-                    "default": 10
-                }
-            }
-        }
-    ]
-    
-    return tools
+## 以上通过装饰器已完成工具注册，无需手动返回工具列表
 
 if __name__ == "__main__":
-    # 测试功能
-    print("币安MCP工具测试")
-    
-    # 获取BTC价格
-    btc_price = get_binance_price("BTCUSDT")
-    print(f"BTC价格: {btc_price}")
-    
-    # 获取账户信息
-    account_info = get_binance_account_info()
-    print(f"账户信息: {account_info}")
-    
-    # 获取热门加密货币
-    top_cryptos = get_top_cryptocurrencies(5)
-    print(f"热门加密货币: {top_cryptos}")
+    port = int(os.getenv("BINANCE_HTTP_PORT", "8005"))
+    mcp.run(transport="streamable-http", port=port)
