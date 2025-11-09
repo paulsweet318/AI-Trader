@@ -1,8 +1,8 @@
 {
   "name": "AI Trader 快速启动配置",
-  "description": "本地快速测试配置，包含美股和A股两种模式",
-  "mode": "us", 
-  "comment": "可切换为 'us' (美股) 或 'cn' (A股)",
+  "description": "本地快速测试配置，包含美股、A股和数字货币三种模式",
+  "mode": "crypto", 
+  "comment": "可切换为 'us' (美股)、'cn' (A股) 或 'crypto' (数字货币)",
   
   "us_market_config": {
     "agent_type": "BaseAgent",
@@ -111,16 +111,73 @@
   "common_settings": {
     "data_sources": {
       "us_stock": "alphavantage",
-      "cn_stock": "tushare"
+      "cn_stock": "tushare",
+      "crypto": "binance"
     },
     "api_keys": {
       "alphavantage": "YOUR_ALPHAVANTAGE_API_KEY",
       "tushare": "YOUR_TUSHARE_API_KEY",
+      "binance": "YOUR_BINANCE_API_KEY",
+      "binance_secret": "YOUR_BINANCE_API_SECRET",
       "openai": "YOUR_OPENAI_API_KEY"
     },
     "parallel_mode": false,
     "save_results": true,
-    "output_format": "json"}
+    "output_format": "json"
+  },
+
+  "crypto_market_config": {
+    "agent_type": "BaseAgentCrypto",
+    "market": "crypto",
+    "exchange": "binance",
+    "date_range": {
+      "init_date": "2025-10-01",
+      "end_date": "2025-10-21"
+    },
+    "models": [
+      {
+        "name": "claude-3.7-sonnet",
+        "basemodel": "anthropic/claude-3.7-sonnet", 
+        "signature": "claude-3.7-sonnet",
+        "enabled": true,
+        "openai_base_url": "Optional: YOUR_OPENAI_BASE_URL",
+        "openai_api_key": "Optional: YOUR_OPENAI_API_KEY"
+      },
+      {
+        "name": "deepseek-chat-v3.1",
+        "basemodel": "deepseek/deepseek-chat-v3.1",
+        "signature": "deepseek-chat-v3.1",
+        "enabled": false
+      },
+      {
+        "name": "qwen3-max",
+        "basemodel": "qwen/qwen3-max",
+        "signature": "qwen3-max",
+        "enabled": false
+      },
+      {
+        "name": "gemini-2.5-flash",
+        "basemodel": "google/gemini-2.5-flash",
+        "signature": "gemini-2.5-flash",
+        "enabled": false
+      },
+      {
+        "name": "gpt-5",
+        "basemodel": "openai/gpt-5",
+        "signature": "gpt-5",
+        "enabled": false
+      }
+    ],
+    "agent_config": {
+      "max_steps": 30,
+      "max_retries": 3,
+      "base_delay": 1.0,
+      "initial_cash": 10000.0,
+      "testnet_enabled": true
+    },
+    "log_config": {
+      "log_path": "./data/agent_data_crypto"
+    }
   },
 
   "prompts": {
@@ -133,14 +190,19 @@
       "system_prompt": "你是一位A股基本面分析交易助手。\n\n你的目标是：\n- 通过调用可用的工具进行思考和推理\n- 你需要思考各个股票的价格和收益情况\n- 你的长期目标是通过这个投资组合最大化收益\n- 在做出决策之前，尽可能通过搜索工具收集信息以辅助决策\n\n思考标准：\n- 清晰展示关键的中间步骤：\n  - 读取昨日持仓和今日价格的输入\n  - 更新估值并调整每个目标的权重（如果策略需要）\n\n注意事项：\n- 你不需要在操作时请求用户许可，可以直接执行\n- 你必须通过调用工具来执行操作，直接输出操作不会被接受\n\n🇨🇳 重要 - A股交易规则（适用于所有 .SH 和 .SZ 股票代码）：\n1. **一手交易要求**: 所有买卖订单必须是100股的整数倍（1手 = 100股）\n   - ✅ 正确: buy(\"600519.SH\", 100), buy(\"600519.SH\", 300), sell(\"600519.SH\", 200)\n   - ❌ 错误: buy(\"600519.SH\", 13), buy(\"600519.SH\", 497), sell(\"600519.SH\", 50)\n\n2. **T+1结算规则**: 当天买入的股票不能当天卖出\n   - 你只能卖出在今天之前购买的股票\n   - 如果你今天买入100股600519.SH，必须等到明天才能卖出\n   - 你仍然可以卖出之前持有的股票\n\n3. **涨跌停限制**: \n   - 普通股票：±10%\n   - ST股票：±5%\n   - 科创板/创业板：±20%\n\n以下是你需要的信息：\n\n今日日期：\n{date}\n\n昨日收盘持仓（股票代码后的数字代表你持有的股数，CASH后的数字代表你的可用现金）：\n{positions}\n\n昨日收盘价格：\n{yesterday_close_price}\n\n今日买入价格：\n{today_buy_price}\n\n昨日收益情况：\n{yesterday_profit}\n\n当你认为任务完成时，输出\n<FINISH_SIGNAL>",
       "stop_signal": "<FINISH_SIGNAL>",
       "description": "A股交易助手系统提示词，包含A股特殊交易规则，适用于上证50成分股"
+    },
+    "crypto_market_prompt": {
+      "system_prompt": "你是一位数字货币交易助手，专注于币安交易所的加密货币交易。\n\n你的目标是：\n- 通过调用可用的工具进行思考和推理\n- 分析加密货币市场趋势和价格波动\n- 执行智能的数字货币交易策略\n- 在做出决策之前，尽可能通过搜索工具收集市场数据以辅助决策\n\n🪙 重要 - 数字货币交易规则（适用于所有加密货币交易对）：\n1. **交易对格式**: 使用标准交易对格式，如BTCUSDT、ETHUSDT\n   - ✅ 正确: buy(\"BTCUSDT\", 0.001), sell(\"ETHUSDT\", 0.1)\n   - ❌ 错误: buy(\"BTC\", 0.001), sell(\"ETH\", 0.1)\n\n2. **交易精度**: 不同币种有不同的最小交易单位和价格精度\n   - BTC: 通常精确到小数点后6位\n   - ETH: 通常精确到小数点后5位\n   - 山寨币: 精度各不相同，需要查询具体交易对信息\n\n3. **24小时交易**: 加密货币市场7×24小时不间断交易\n   - 没有开盘收盘时间限制\n   - 可以随时下单和撤单\n\n4. **价格波动**: 数字货币价格波动性极大\n   - 日内波动可能超过10-20%\n   - 需要严格的风险管理\n\n5. **交易费用**: 币安收取交易手续费\n   - 现货交易: 0.1%（普通用户）\n   - 使用BNB支付手续费可享受折扣\n\n思考标准：\n- 清晰展示关键的中间步骤：\n  - 读取当前持仓和市场价格的输入\n  - 分析技术指标和市场情绪\n  - 评估风险收益比\n  - 执行交易决策\n\n注意事项：\n- 你不需要在操作时请求用户许可，可以直接执行\n- 你必须通过调用工具来执行操作，直接输出操作不会被接受\n- 建议优先使用测试网络进行开发和测试\n\n以下是你需要的信息：\n\n当前时间：\n{date}\n\n当前持仓（交易对后的数字代表你持有的币数，CASH后的数字代表你的USDT余额）：\n{positions}\n\n当前市场价格：\n{current_prices}\n\n24小时价格变化：\n{price_changes_24h}\n\n市场数据概览：\n{market_overview}\n\n⚠️ 风险提示：数字货币交易风险极高，请谨慎投资，只使用您能承受损失的资金。\n\n当你认为任务完成时，输出\n<FINISH_SIGNAL>",
+      "stop_signal": "<FINISH_SIGNAL>",
+      "description": "数字货币交易助手系统提示词，包含加密货币交易规则和风险管理，适用于币安交易所"
     }
   },
 
   "quick_start_guide": {
     "step1": "设置API密钥到.env文件",
-    "step2": "选择市场模式 (us/cn)",
+    "step2": "选择市场模式 (us/cn/crypto)",
     "step3": "启用所需的AI模型",
     "step4": "运行主程序: python main.py --config configs/local_quickstart.json",
-    "step5": "或使用对应脚本: bash scripts/main.sh (美股) 或 bash scripts/main_a_stock_step1.sh (A股)"
+    "step5": "或使用对应脚本: bash scripts/main.sh (美股) 或 bash scripts/main_a_stock_step1.sh (A股) 或 bash scripts/main_crypto.sh (数字货币)"
   }
 }
