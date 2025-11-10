@@ -1,0 +1,78 @@
+{
+  "name": "A股市场配置",
+  "description": "上证50成分股交易配置",
+  "market": "cn",
+  "agent_type": "BaseAgentAStock",
+  "enabled": true,
+  "date_range": {
+    "init_date": "2025-10-01",
+    "end_date": "2025-11-03"
+  },
+  "models": [
+    {
+      "name": "claude-3.7-sonnet",
+      "basemodel": "anthropic/claude-3.7-sonnet",
+      "signature": "claude-3.7-sonnet",
+      "enabled": true,
+      "openai_base_url": "Optional: YOUR_OPENAI_BASE_URL",
+      "openai_api_key": "Optional: YOUR_OPENAI_API_KEY"
+    },
+    {
+      "name": "deepseek-chat-v3.1",
+      "basemodel": "deepseek/deepseek-chat-v3.1",
+      "signature": "deepseek-chat-v3.1",
+      "enabled": false
+    },
+    {
+      "name": "qwen3-max",
+      "basemodel": "qwen/qwen3-max",
+      "signature": "qwen3-max",
+      "enabled": false
+    },
+    {
+      "name": "gemini-2.5-flash",
+      "basemodel": "google/gemini-2.5-flash",
+      "signature": "gemini-2.5-flash",
+      "enabled": false
+    },
+    {
+      "name": "gpt-5",
+      "basemodel": "openai/gpt-5",
+      "signature": "gpt-5",
+      "enabled": false
+    }
+  ],
+  "agent_config": {
+    "max_steps": 2,
+    "max_retries": 3,
+    "base_delay": 1.0,
+    "initial_cash": 10000.0
+  },
+  "data_source": "tushare",
+  "api_key_required": ["tushare", "openai"],
+  "prompt_template": "cn_market_prompt",
+  "trading_rules": {
+    "market_hours": "9:30-15:00 CST",
+    "settlement": "T+1",
+    "min_order_size": 100,
+    "lot_size": 100,
+    "price_limit": {
+      "normal": 0.1,
+      "st": 0.05,
+      "kcb_cyb": 0.2
+    },
+    "supported_order_types": ["market", "limit"]
+  },
+  "risk_management": {
+    "max_position_size": 0.25,
+    "stop_loss_percentage": 0.03,
+    "take_profit_percentage": 0.10,
+    "max_daily_loss": 0.015
+  },
+  "log_config": {
+    "log_path": "./data/agent_data_astock",
+    "log_level": "INFO",
+    "save_trades": true,
+    "save_portfolio": true
+  }
+}

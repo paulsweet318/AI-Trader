@@ -1,0 +1,62 @@
+{
+  "name": "AI-Trader 多市场配置",
+  "description": "支持美股、A股、数字货币的多市场交易系统",
+  "version": "1.0.0",
+  "active_modes": ["us", "cn", "crypto"],
+  "mode_configs": {
+    "us": {
+      "name": "美股市场",
+      "description": "纳斯达克100成分股交易",
+      "config_file": "us_market_config.json",
+      "enabled": true,
+      "priority": 1,
+      "color": "#1f77b4"
+    },
+    "cn": {
+      "name": "A股市场",
+      "description": "上证50成分股交易",
+      "config_file": "cn_market_config.json",
+      "enabled": true,
+      "priority": 2,
+      "color": "#ff7f0e"
+    },
+    "crypto": {
+      "name": "数字货币市场",
+      "description": "币安交易所加密货币交易",
+      "config_file": "crypto_market_config.json",
+      "enabled": true,
+      "priority": 3,
+      "color": "#2ca02c"
+    }
+  },
+  "common_settings": {
+    "api_keys": {
+      "alphavantage": "YOUR_ALPHAVANTAGE_API_KEY",
+      "tushare": "YOUR_TUSHARE_API_KEY",
+      "binance": "YOUR_BINANCE_API_KEY",
+      "binance_secret": "YOUR_BINANCE_API_SECRET",
+      "openai": "YOUR_OPENAI_API_KEY"
+    },
+    "parallel_mode": false,
+    "save_results": true,
+    "output_format": "json",
+    "log_level": "INFO",
+    "max_concurrent_agents": 3,
+    "auto_restart": false
+  },
+  "ui_settings": {
+    "theme": "dark",
+    "refresh_interval": 30,
+    "auto_save": true,
+    "confirm_before_trade": true,
+    "show_advanced_options": false,
+    "language": "zh-CN"
+  },
+  "system_settings": {
+    "config_version": "1.0.0",
+    "last_updated": "2025-10-01T00:00:00Z",
+    "backup_enabled": true,
+    "backup_interval": 24,
+    "max_backup_files": 10
+  }
+}

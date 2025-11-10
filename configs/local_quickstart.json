@@ -1,8 +1,15 @@
 {
   "name": "AI Trader 快速启动配置",
-  "description": "本地快速测试配置，包含美股、A股和数字货币三种模式",
-  "mode": "crypto", 
-  "comment": "可切换为 'us' (美股)、'cn' (A股) 或 'crypto' (数字货币)",
+  "description": "本地快速测试配置，包含美股、A股和数字货币三种模式，支持多模式切换",
+  "mode": "multi", 
+  "comment": "支持 'us' (美股)、'cn' (A股)、'crypto' (数字货币) 或 'multi' (多模式管理)",
+  "multi_mode_enabled": true,
+  "config_manager": {
+    "enabled": true,
+    "web_interface": "http://localhost:5000",
+    "auto_switch": true,
+    "validate_configs": true
+  },
   
   "us_market_config": {
     "agent_type": "BaseAgent",
