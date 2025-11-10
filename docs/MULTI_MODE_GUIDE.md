@@ -161,6 +161,103 @@ scripts/
 2. **直接编辑**: 修改 `local_quickstart.json`
 3. **环境变量**: 设置对应的环境变量
 
+## 🤖 AI模型配置（多模型）
+
+AI-Trader 支持为每个市场（美股/A股/加密货币）独立配置多个 AI 模型，包括启用/禁用、参数调节、优先级排序，以及模型选择策略：
+- `priority`（按优先级）
+- `round_robin`（轮询）
+- `cost_optimized`（成本优化）
+- `performance_optimized`（性能优化）
+
+### 入口与市场标识说明
+- Web 界面：配置管理页内的“模型概览 / 模型配置 / 市场模型”标签页
+- API：模型相关端点前缀为 `/api/models/...`
+- 市场标识：
+  - 可用模型查询使用 `us`、`cn`、`crypto`
+  - 市场配置使用 `us_market`、`cn_market`、`crypto_market`
+
+### 查询可用模型（按市场过滤）
+```bash
+curl -s "http://localhost:5000/api/models/available?market=us" | jq
+```
+
+### 查看指定市场的模型配置与选择结果
+```bash
+curl -s "http://localhost:5000/api/models/market/us_market" | jq
+```
+
+### 更新市场的多模型配置
+向指定市场提交启用的模型列表、选择策略与 API 密钥：
+```bash
+curl -s -X PUT "http://localhost:5000/api/models/market/us_market" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model_selection": {
+      "strategy": "priority",
+      "fallback_enabled": true,
+      "max_retries": 3,
+      "timeout_seconds": 30
+    },
+    "enabled_models": [
+      {
+        "model_id": "gpt-4-turbo",
+        "name": "GPT-4 Turbo",
+        "provider": "openai",
+        "enabled": true,
+        "priority": 1,
+        "parameters": { "temperature": 0.6, "max_tokens": 2000 },
+        "rate_limit": { "requests_per_minute": 300, "tokens_per_minute": 80000 }
+      },
+      {
+        "model_id": "claude-3-sonnet-20240229",
+        "name": "Claude 3 Sonnet",
+        "provider": "anthropic",
+        "enabled": true,
+        "priority": 2,
+        "parameters": { "temperature": 0.7, "max_tokens": 2000 },
+        "rate_limit": { "requests_per_minute": 200, "tokens_per_minute": 80000 }
+      }
+    ],
+    "api_keys": { "openai": "YOUR_OPENAI_API_KEY", "anthropic": "YOUR_ANTHROPIC_API_KEY" }
+  }'
+```
+
+### 验证市场模型配置
+返回每个启用模型的验证结果和总体有效性：
+```bash
+curl -s "http://localhost:5000/api/models/validate/us_market" | jq
+```
+
+### 估算模型使用成本
+提供输入/输出令牌，返回美元计价的成本估算：
+```bash
+curl -s -X POST "http://localhost:5000/api/models/cost-estimate" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model_id": "gpt-4-turbo",
+    "provider": "openai",
+    "input_tokens": 2000,
+    "output_tokens": 1500
+  }' | jq
+```
+
+### 注意事项
+- 先在“通用设置”或“API 密钥配置”中填好各供应商的密钥，否则模型验证将失败。
+- 启用多个模型时，`priority` 越小优先级越高；`round_robin` 会在启用模型间轮换。
+- `available` 接口的 `market` 参数使用短码（`us/cn/crypto`），市场配置相关接口使用市场键（`us_market/cn_market/crypto_market`）。
+
+### 快速检查
+```bash
+# 1) 拉取可用模型（美股）
+curl -s "http://localhost:5000/api/models/available?market=us" | jq '.data.total'
+
+# 2) 查看当前市场的启用模型与选择结果
+curl -s "http://localhost:5000/api/models/market/us_market" | jq '.data.selected_models | length'
+
+# 3) 运行验证
+curl -s "http://localhost:5000/api/models/validate/us_market" | jq '.data.overall_valid'
+```
+
 ## 🛠️ 高级功能
 
 ### 配置验证
