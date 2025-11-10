@@ -352,7 +352,7 @@ def export_config(market):
             "error": str(e)
         }), 500
 
-@app.route('/api/config/import/<market>", methods=['POST'])
+@app.route('/api/config/import/<market>', methods=['POST'])
 def import_config(market):
     """导入配置"""
     try:
@@ -1104,8 +1104,31 @@ CONFIG_HTML_TEMPLATE = '''
 
 if __name__ == '__main__':
     print("🚀 启动AI-Trader配置管理API服务...")
-    print("📊 配置管理界面: http://localhost:5000")
-    print("🔧 API文档: http://localhost:5000/api/*")
+    
+    # 读取端口配置（优先使用环境变量）
+    port_env = os.getenv('FLASK_PORT') or os.getenv('PORT')
+    try:
+        preferred_port = int(port_env) if port_env else 5000
+    except ValueError:
+        preferred_port = 5000
+
+    # 自动选择可用端口
+    def find_available_port(start_port: int, max_tries: int = 20) -> int:
+        import socket
+        for p in range(start_port, start_port + max_tries):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                try:
+                    s.bind(('0.0.0.0', p))
+                    return p
+                except OSError:
+                    continue
+        return start_port
+
+    port = find_available_port(preferred_port)
+
+    print(f"📊 配置管理界面: http://localhost:{port}")
+    print(f"🔧 API文档: http://localhost:{port}/api/*")
     
     # 确保配置目录存在
     os.makedirs("configs", exist_ok=True)
@@ -1119,4 +1142,4 @@ if __name__ == '__main__':
         print("✅ 默认配置创建完成")
     
     # 启动Flask应用
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)

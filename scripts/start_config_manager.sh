@@ -25,7 +25,18 @@ echo "🐍 Python版本: $PYTHON_VERSION"
 # 检查依赖
 if ! python3 -c "import flask" &> /dev/null; then
     echo "📦 安装Flask依赖..."
-    pip install flask flask-cors
+    # 使用虚拟环境以避免系统Python的限制（PEP 668）
+    VENV_DIR="$PROJECT_ROOT/.venv"
+    if [ ! -d "$VENV_DIR" ]; then
+        echo "🧪 创建虚拟环境: $VENV_DIR"
+        python3 -m venv "$VENV_DIR" || { echo "❌ 虚拟环境创建失败"; exit 1; }
+    fi
+    # 激活虚拟环境
+    # shellcheck disable=SC1091
+    source "$VENV_DIR/bin/activate" || { echo "❌ 虚拟环境激活失败"; exit 1; }
+    echo "📦 在虚拟环境中安装依赖..."
+    python -m pip install -q --upgrade pip || true
+    python -m pip install -q flask flask-cors || { echo "❌ 依赖安装失败"; exit 1; }
 fi
 
 # 检查配置文件
@@ -53,11 +64,12 @@ cd "$PROJECT_ROOT"
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
 export FLASK_APP="configs/config_api.py"
 export FLASK_ENV="development"
+export FLASK_PORT="${FLASK_PORT:-5000}"
 
 # 启动配置管理服务
 echo "🌐 启动配置管理API服务..."
-echo "📊 Web界面地址: http://localhost:5000"
-echo "🔧 API文档地址: http://localhost:5000/api/*"
+echo "📊 Web界面地址: http://localhost:$FLASK_PORT"
+echo "🔧 API文档地址: http://localhost:$FLASK_PORT/api/*"
 echo ""
 echo "ℹ️  提示:"
 echo "   - 使用 Ctrl+C 停止服务"
@@ -66,4 +78,9 @@ echo "   - 日志输出在控制台显示"
 echo ""
 
 # 运行配置管理API服务
-python3 configs/config_api.py
+# 如果已创建虚拟环境，则使用其中的Python运行服务
+if [ -n "$VIRTUAL_ENV" ]; then
+    python configs/config_api.py
+else
+    python3 configs/config_api.py
+fi
